@@ -1,0 +1,14 @@
+OCAML_LIBS = $(OCAML_LIBS_log-merge)
+
+FILES[] =
+  log_merge
+  log_merge_main
+
+OCamlLibrary(log-merge, $(FILES))
+Meta(log-merge)
+
+.DEFAULT: META log-merge.cma log-merge.cmxa
+
+.PHONY: clean
+clean:
+  rm -f *.o *.a *.cm* *~ *.annot *.run *.opt META
