@@ -81,3 +81,69 @@ let merge_files input_files opt_output_file =
     ) lines
   ) merged_stream;
   close ()
+
+module Test = struct
+  let to_file filename lines =
+    let oc = open_out filename in
+    List.iter (fun s -> fprintf oc "%s\n" s) lines;
+    close_out oc
+
+  let of_file filename =
+    let stream, close = Util_stream.stream_of_file filename in
+    Util_stream.to_list stream
+
+  let merge l =
+    let input_files =
+      List.map (fun lines ->
+        let file = Filename.temp_file "test-log-merge-in-" "" in
+        to_file file lines;
+        file
+      ) l
+    in
+    let output_file = Filename.temp_file "test-log-merge-out-" "" in
+    merge_files input_files (Some output_file);
+    let merged_lines = of_file output_file in
+    List.iter Sys.remove input_files;
+    Sys.remove output_file;
+    merged_lines
+
+  let line1 = "[1970-01-01T00:00:00.000-07:00] 1"
+  let line2 = "[1970-01-01T00:00:00.000-07:00] 2"
+  let line3 = "3"
+  let line4 = "[1970-01-01T00:00:00.001-07:00] 4"
+  let line5 = "[1970-01-01T00:00:00.002-07:00] 5"
+  let line6 = "[1970-01-01T00:00:00.002-07:00] 6"
+  let line7 = "7"
+
+  let test () =
+    assert (
+      merge [] = []
+    );
+
+    assert (
+      merge [ ["junk"; "more junk"] ] = []
+    );
+
+    assert (
+      merge [
+        ["junk"];
+        ["other junk"];
+      ] =
+      []
+    );
+
+    assert (
+      merge [
+        ["junk"; line1];
+        [line5];
+        [line2; line3; line4];
+        [line6; line7];
+      ] =
+      [line1; line2; line3; line4; line5; line6; line7]
+    );
+    true
+end
+
+let tests = [
+  "log-merge", Test.test;
+]
