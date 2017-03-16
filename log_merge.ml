@@ -66,13 +66,7 @@ let items_of_file filename =
 *)
 let merge_files input_files opt_output_file =
   let kv_streams = BatList.map items_of_file input_files in
-  let merged_stream =
-    Util_stream.merge
-      compare
-      (fun t -> [])
-      (fun acc lines -> lines @ acc)
-      kv_streams
-  in
+  let merged_stream = Util_stream.merge compare kv_streams in
   let oc, close =
     match opt_output_file with
     | None ->
