@@ -17,7 +17,7 @@ let parse_timestamp line =
     Some (Util_time.of_string (Pcre.get_substring subs 1))
   with
   | Not_found -> None
-  | Invalid_argument "Netdate.parse" -> failwith ("Corrupt timestamp: " ^ line)
+  | Invalid_argument _ -> failwith ("Corrupt timestamp: " ^ line)
 
 (*
    Inspect a line and determine if it's the beginning of a new item.
